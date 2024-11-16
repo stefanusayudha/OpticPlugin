@@ -15,6 +15,8 @@ As a backup, I decided to create it myself. And hey, I finished it before Christ
 To use this feature, all you need to do is put the `@GenerateLens` annotation **on top of a property**.
 Then you click build, and the Lenses will be generated for you.
 
+NB: You can check the composeApp package for example.
+
 Example:
 ```kotlin
 data class HomePaneState(
