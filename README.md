@@ -95,6 +95,22 @@ plugins {
 }
 ```
 
+Or for legacy app:
+```kotlin
+buildscript {
+  repositories {
+    maven {
+      url = uri("https://plugins.gradle.org/m2/")
+    }
+  }
+  dependencies {
+    classpath("io.github.stefanusayudha:optic:1.0.0")
+  }
+}
+
+apply(plugin = "io.github.stefanusayudha.OpticGeneratorPlugin")
+```
+
 # Catch
 This plugin may impact your build performance. I'm still working on optimizing it. Use it at your own risk.
 
