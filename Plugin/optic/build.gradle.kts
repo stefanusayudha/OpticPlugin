@@ -1,10 +1,10 @@
 plugins {
     `kotlin-dsl`
     id("org.jetbrains.kotlin.plugin.serialization")
-//    id("com.gradle.plugin-publish") version "1.2.1"
+    id("com.gradle.plugin-publish") version "1.3.0"
 }
 
-version = "1.0.1"
+version = "1.0.0"
 group = "io.github.stefanusayudha"
 
 java {
@@ -23,8 +23,8 @@ dependencies {
 }
 
 gradlePlugin {
-//    website.set("https://github.com/SingularityIndonesia/SingularityBaseMobile/")
-//    vcsUrl.set("https://github.com/SingularityIndonesia/SingularityBaseMobile/")
+    website.set("https://github.com/stefanusayudha/OpticPlugin/")
+    vcsUrl.set("https://github.com/stefanusayudha/OpticPlugin/")
     plugins {
         register("OpticGeneratorPlugin") {
             id = "io.github.stefanusayudha.OpticGeneratorPlugin"
