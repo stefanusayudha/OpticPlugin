@@ -7,6 +7,8 @@ import java.io.FileReader
 fun File.dumpFile(fileNameClue: String): Sequence<File> {
     return listFiles()
         ?.asSequence()
+        // exclude build folder
+        ?.filter { file -> !file.path.contains("build/") }
         ?.mapNotNull { file ->
             when {
                 !file.isDirectory && file.name.contains(fileNameClue) -> sequenceOf(file)
