@@ -1,3 +1,4 @@
+# Optic Generator Plugin MultiPlatform
 Powered by: Singularity Indonesia
 
 # Prolog
@@ -90,6 +91,8 @@ _uiState.safeUpdate { state ->
 ```
 
 # Implementation
+No KSP Needed.
+
 In build gradle
 ```kotlin
 plugins {
