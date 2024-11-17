@@ -48,13 +48,17 @@ class OpticGeneratorPlugin : Plugin<Project> {
 
         // print Lens.kt
         val file1 = File(projectDir, "${path}Lens.kt")
-        file1.parentFile.mkdirs()
-        file1.writeText(LENS_TEMPLATE)
+        if (!file1.exists()) {
+            file1.parentFile.mkdirs()
+            file1.writeText(LENS_TEMPLATE)
+        }
 
         // print GenerateLens
         val file2 = File(projectDir, "${path}GenerateAnnotation.kt")
-        file2.parentFile.mkdirs()
-        file2.writeText(GENERATE_LENS_TEMPLATE)
+        if (!file2.exists()) {
+            file2.parentFile.mkdirs()
+            file2.writeText(GENERATE_LENS_TEMPLATE)
+        }
     }
 
     private fun getTargetFiles(projectDir: File): Sequence<File> {
