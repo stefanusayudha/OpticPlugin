@@ -93,7 +93,7 @@ _uiState.safeUpdate { state ->
 In build gradle
 ```kotlin
 plugins {
-  id("io.github.stefanusayudha.OpticGeneratorPlugin") version "1.0.1"
+  id("io.github.stefanusayudha.OpticGeneratorPlugin") version "1.1.0"
 }
 ```
 
@@ -106,7 +106,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath("io.github.stefanusayudha:optic:1.0.1")
+    classpath("io.github.stefanusayudha:optic:1.1.0")
   }
 }
 
@@ -114,7 +114,7 @@ apply(plugin = "io.github.stefanusayudha.OpticGeneratorPlugin")
 ```
 
 # Catch
-This plugin may impact your build performance. I'm still working on optimizing it. Use it at your own risk.
+~~This plugin may impact your build performance. I'm still working on optimizing it. Use it at your own risk~~. **Since 1.0.0; Now with caching mechanism for fast build!** 
 
 # Meet the Author
 [Stefanus Ayudha](https://www.linkedin.com/in/stefanus-ayudha-447a98b5/)

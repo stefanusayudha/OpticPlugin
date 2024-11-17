@@ -4,7 +4,7 @@ plugins {
     id("com.gradle.plugin-publish") version "1.3.0"
 }
 
-version = "1.0.1"
+version = "1.1.0"
 group = "io.github.stefanusayudha"
 
 java {
