@@ -20,8 +20,6 @@ class OpticGeneratorPlugin : Plugin<Project> {
         const val PACKAGE_GROUP = "io.github.stefanusayudha.optic"
     }
 
-    private val Project.namespace get() = group.toString().lowercase()
-
     override fun apply(
         target: Project
     ) {
