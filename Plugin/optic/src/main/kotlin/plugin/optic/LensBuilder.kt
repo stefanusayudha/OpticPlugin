@@ -24,7 +24,11 @@ class LensBuilder(
             val contentBody =
                 groupedAnnotatedProperties.foldIndexed("") { index, acc, e -> if (index != 0) "$acc\n\n$e" else "$acc\n$e" }
 
-            return listOf(BLOCK_PREPOSSESSOR, OpticGeneratorPlugin.SIGNATURE)
+            return listOf(
+                BLOCK_PREPOSSESSOR,
+                OpticGeneratorPlugin.SIGNATURE,
+                "// Created at: ${System.currentTimeMillis()} Epoch"
+            )
                 .plus(contentBody)
                 .plus(BLOCK_SUBPOSSESSOR)
                 .foldIndexed("") { index, acc, n ->
@@ -105,26 +109,26 @@ class LensBuilder(
         return protoClass
     }
 
-    fun printToFile() {
-        // new file content where the lenses block is inserted
-        val newFileContent: String = run {
-            val beginIndex = fileContent.indexOfFirst { s -> s.contains(BLOCK_PREPOSSESSOR) }
-                .takeIf { it >= 0 } ?: fileContent.size
-            val endIndex = fileContent.indexOfFirst { s -> s.contains(BLOCK_SUBPOSSESSOR) }
-                .takeIf { it >= 0 } ?: fileContent.size
+    // new file content where the lenses block is inserted
+    val newFileContent: String get() {
+        val beginIndex = fileContent.indexOfFirst { s -> s.contains(BLOCK_PREPOSSESSOR) }
+            .takeIf { it >= 0 } ?: fileContent.size
+        val endIndex = fileContent.indexOfFirst { s -> s.contains(BLOCK_SUBPOSSESSOR) }
+            .takeIf { it >= 0 } ?: fileContent.size
 
-            val topContent = fileContent.subList(0, beginIndex)
-            val endContent = fileContent.subList(
-                (endIndex + 1).takeIf { it <= fileContent.size } ?: fileContent.size,
-                fileContent.size
-            )
-            val newContent = (topContent + proto + endContent).foldIndexed("") { index, acc, n ->
-                if (index != 0) "$acc\n$n" else "$acc$n"
-            }
-
-            newContent
+        val topContent = fileContent.subList(0, beginIndex)
+        val endContent = fileContent.subList(
+            (endIndex + 1).takeIf { it <= fileContent.size } ?: fileContent.size,
+            fileContent.size
+        )
+        val newContent = (topContent + proto + endContent).foldIndexed("") { index, acc, n ->
+            if (index != 0) "$acc\n$n" else "$acc$n"
         }
 
+        return newContent
+    }
+
+    fun printToFile() {
         source.writeText(newFileContent)
     }
 }

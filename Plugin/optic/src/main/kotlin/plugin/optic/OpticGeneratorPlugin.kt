@@ -16,30 +16,35 @@ class OpticGeneratorPlugin : Plugin<Project> {
         const val BLOCK_SUBPOSSESSOR = "// #END Auto Generated Lenses, Do not Modify!"
         const val SIGNATURE = "// Powered by: Singularity Indonesia"
         const val TARGET_ANNOTATION = "@GenerateLens"
-        const val TARGET_DIR = "build/generated/kotlin/lenses/"
+        const val TARGET_DIR = "build/generated/kotlin/lenses"
         const val PACKAGE_GROUP = "io.github.stefanusayudha.optic"
+        const val CACHE_DIR = "build/tmp/OpticGeneratorPlugin"
     }
 
     override fun apply(
         target: Project
     ) {
         // adding targetDir to source set
-        addToSourceSet(target, TARGET_DIR)
+        addToSourceSet(target, "$TARGET_DIR/")
         generateBasicUtils(target.projectDir)
 
         // dump target files
+        val cache = Cache(target.projectDir)
         val targetFiles = getTargetFiles(target.projectDir)
+            // take file that is changed
+            .filter { file -> !cache.compareToCache(file) }
 
         // create lenses
         val lensBuilders = generateLenses(targetFiles)
 
         // generate files
         writeToFile(lensBuilders)
+        cache.writeToCache(lensBuilders)
     }
 
     // generate Lens class and GenerateLens tobe use
     private fun generateBasicUtils(projectDir: File) {
-        val path = "${TARGET_DIR}${PACKAGE_GROUP.replace(".", "/")}/"
+        val path = "${TARGET_DIR}/${PACKAGE_GROUP.replace(".", "/")}/"
 
         // print Lens.kt
         val file1 = File(projectDir, "${path}Lens.kt")
