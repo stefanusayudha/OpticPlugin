@@ -16,31 +16,32 @@ class OpticGeneratorPlugin : Plugin<Project> {
         const val BLOCK_SUBPOSSESSOR = "// #END Auto Generated Lenses, Do not Modify!"
         const val SIGNATURE = "// Powered by: Singularity Indonesia"
         const val TARGET_ANNOTATION = "@GenerateLens"
+        const val TARGET_DIR = "build/generated/kotlin/lenses/"
+        const val PACKAGE_GROUP = "io.github.stefanusayudha.optic"
     }
 
-    private val targetDir = "build/generated/kotlin/lenses/"
     private val Project.namespace get() = group.toString().lowercase()
 
     override fun apply(
         target: Project
     ) {
         // adding targetDir to source set
-        addToSourceSet(target, targetDir)
+        addToSourceSet(target, TARGET_DIR)
         generateBasicUtils(target.projectDir)
 
         // dump target files
         val targetFiles = getTargetFiles(target.projectDir)
 
         // create lenses
-        val lenses = generateLenses(targetFiles)
+        val lensBuilders = generateLenses(targetFiles)
 
         // generate files
-        writeToFile(lenses)
+        writeToFile(lensBuilders)
     }
 
     // generate Lens class and GenerateLens tobe use
     private fun generateBasicUtils(projectDir: File) {
-        val path = "${targetDir}io/github/stefanusayudha/optic/"
+        val path = "${TARGET_DIR}${PACKAGE_GROUP.replace(".", "/")}/"
 
         // print Lens.kt
         val file1 = File(projectDir, "${path}Lens.kt")
@@ -61,33 +62,7 @@ class OpticGeneratorPlugin : Plugin<Project> {
         return files.map { file -> LensBuilder(file) }
     }
 
-    private fun writeToFile(lenses: Sequence<LensBuilder>) {
-        lenses
-            .onEach { lens ->
-                printToFile(
-                    file = lens.source,
-                    content = lens.content
-                )
-            }
-            .toList()
-    }
-
-    private fun printToFile(file: File, content: String) {
-        val fileContent = file.readLines()
-        val beginIndex = fileContent.indexOfFirst { s -> s.contains(BLOCK_PREPOSSESSOR) }
-            .takeIf { it >= 0 } ?: fileContent.size
-        val endIndex = fileContent.indexOfFirst { s -> s.contains(BLOCK_SUBPOSSESSOR) }
-            .takeIf { it >= 0 } ?: fileContent.size
-
-        val topContent = fileContent.subList(0, beginIndex)
-        val endContent = fileContent.subList(
-            (endIndex + 1).takeIf { it <= fileContent.size } ?: fileContent.size,
-            fileContent.size
-        )
-        val newContent = (topContent + content + endContent).foldIndexed("") { index, acc, n ->
-            if (index != 0) "$acc\n$n" else "$acc$n"
-        }
-
-        file.writeText(newContent)
+    private fun writeToFile(builders: Sequence<LensBuilder>) {
+        builders.forEach { builder -> builder.printToFile() }
     }
 }
