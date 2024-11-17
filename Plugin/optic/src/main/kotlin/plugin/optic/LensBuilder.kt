@@ -67,7 +67,6 @@ class LensBuilder(
         listOf(
             BLOCK_PREPOSSESSOR,
             OpticGeneratorPlugin.SIGNATURE,
-            "// Created at: ${System.currentTimeMillis()} Epoch"
         )
             .plus(contentBody)
             .plus(BLOCK_SUBPOSSESSOR)
