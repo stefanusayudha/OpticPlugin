@@ -15,6 +15,8 @@ As a backup, I decided to create it myself. And hey, I finished it before Christ
 To use this feature, all you need to do is put the `@GenerateLens` annotation **on top of a property**.
 Then you click build, and the Lenses will be generated for you.
 
+NB: You can check the composeApp package for example.
+
 Example:
 ```kotlin
 data class HomePaneState(
@@ -93,6 +95,22 @@ In build gradle
 plugins {
   id("io.github.stefanusayudha.OpticGeneratorPlugin") version "1.0.0"
 }
+```
+
+Or for legacy app:
+```kotlin
+buildscript {
+  repositories {
+    maven {
+      url = uri("https://plugins.gradle.org/m2/")
+    }
+  }
+  dependencies {
+    classpath("io.github.stefanusayudha:optic:1.0.0")
+  }
+}
+
+apply(plugin = "io.github.stefanusayudha.OpticGeneratorPlugin")
 ```
 
 # Catch
