@@ -24,7 +24,6 @@ class Cache(
             val cacheFile = File(projectDir, "${OpticGeneratorPlugin.CACHE_DIR}${builder.source.path}")
             cacheFile.parentFile.mkdirs()
             cacheFile.writeText(builder.newFileContent)
-            println("Writing done for ${cacheFile.path}")
         }
     }
 

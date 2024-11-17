@@ -4,6 +4,10 @@ import org.gradle.kotlin.dsl.support.uppercaseFirstChar
 import plugin.optic.OpticGeneratorPlugin.Companion.BLOCK_PREPOSSESSOR
 import plugin.optic.OpticGeneratorPlugin.Companion.BLOCK_SUBPOSSESSOR
 import java.io.File
+import kotlin.collections.foldIndexed
+import kotlin.sequences.joinToString
+import kotlin.text.contains
+import kotlin.text.split
 
 class LensBuilder(
     val source: File
@@ -12,68 +16,86 @@ class LensBuilder(
         const val DATA_CLASS_IDENTIFIER = "data class"
     }
 
-    val fileContent: List<String> get() = source.useLines { lines -> lines.toList() }
+    val fileContent: Sequence<String> by lazy {
+        source.useLines { lines -> lines.toList().asSequence() }
+    }
 
-    // proto content, the generated lenses block
-    val proto: String
-        get() {
-            val annotatedProperties = getAnnotatedProperties(fileContent)
-            val groupedAnnotatedProperties = annotatedProperties
-                .groupBy { property -> property.className }
-                .map { entry -> toProtoClass(entry) }
-            val contentBody =
-                groupedAnnotatedProperties.foldIndexed("") { index, acc, e -> if (index != 0) "$acc\n\n$e" else "$acc\n$e" }
-
-            return listOf(
-                BLOCK_PREPOSSESSOR,
-                OpticGeneratorPlugin.SIGNATURE,
-                "// Created at: ${System.currentTimeMillis()} Epoch"
-            )
-                .plus(contentBody)
-                .plus(BLOCK_SUBPOSSESSOR)
-                .foldIndexed("") { index, acc, n ->
-                    if (index != 0) "$acc\n$n" else "$acc$n"
-                }
-        }
-
-    private fun getAnnotatedProperties(content: List<String>): List<AnnotatedProperty> {
-
+    // property with annotation @GenerateLens
+    val annotatedProperties: Sequence<AnnotatedProperty> by lazy {
         val annotationPositions =
-            content.foldIndexed(listOf<Int>()) { index, acc, e ->
+            fileContent.foldIndexed(sequenceOf<Int>()) { index, acc, e ->
                 if (e.contains(OpticGeneratorPlugin.TARGET_ANNOTATION)) acc + index else acc
             }
 
-        return annotationPositions.map { i ->
+        annotationPositions.map { i ->
 
-            val property = content[i + 1]
+            val property = fileContent.elementAt(i + 1)
             val propertyName = property.split(":").first().replace("val", " ").replace("var", " ").replace(" ", "")
             val propertyType = property.split(":").last().split("=").first().replace(",", " ").replace(" ", "")
 
-            var className = run {
+            var classContext = run {
                 var searchedIndex = i
 
                 while (searchedIndex >= 0) {
                     searchedIndex--
-                    val suspect = content[searchedIndex]
+                    val suspect = fileContent.elementAt(searchedIndex)
                     if (suspect.contains(DATA_CLASS_IDENTIFIER)) {
                         return@run suspect.split("class").last().split("(").first()
                         break
                     }
                 }
 
-                throw Error("Class name not found for $propertyName")
+                throw Error("Class context not found for $propertyName")
             }
 
             AnnotatedProperty(
-                className = className,
+                className = classContext,
                 propertyName = propertyName,
                 propertyType = propertyType
             )
         }
     }
 
-    private fun toProtoClass(entry: Map.Entry<String, List<AnnotatedProperty>>): String {
+    // proto content, the generated lenses block
+    val proto: String by lazy {
+        val groupedAnnotatedProperties = annotatedProperties
+            .groupBy { property -> property.className }
+            .map { entry -> ProtoObject(entry).protoClass }
 
+        val contentBody = "\n" + groupedAnnotatedProperties.joinToString("\n\n")
+
+        listOf(
+            BLOCK_PREPOSSESSOR,
+            OpticGeneratorPlugin.SIGNATURE,
+            "// Created at: ${System.currentTimeMillis()} Epoch"
+        )
+            .plus(contentBody)
+            .plus(BLOCK_SUBPOSSESSOR)
+            .joinToString("\n")
+    }
+
+    // new file content where the lenses block is inserted
+    val newFileContent: String by lazy {
+        val beginIndex = fileContent.indexOfFirst { s -> s.contains(BLOCK_PREPOSSESSOR) }
+        val endIndex = fileContent.indexOfFirst { s -> s.contains(BLOCK_SUBPOSSESSOR) }
+
+        val topContent = if (beginIndex != -1) fileContent.take(beginIndex) else fileContent
+        val endContent = if (endIndex != -1) fileContent.drop(endIndex + 1) else emptySequence()
+
+        (topContent + proto + endContent)
+            .joinToString("\n")
+    }
+
+    fun printToFile() {
+        source.writeText(newFileContent)
+    }
+}
+
+class ProtoObject(
+    entry: Map.Entry<String, List<AnnotatedProperty>>
+) {
+
+    val protoClass by lazy {
         val className = "${entry.key}Lens"
         val propertyLenses = entry.value
             .map { property ->
@@ -92,43 +114,12 @@ class LensBuilder(
             }
             .flatten()
 
-        val protoClass = listOf("object ${className.uppercaseFirstChar()} {")
+        listOf("object ${className.uppercaseFirstChar()} {")
             .plus(
                 // add indent
                 propertyLenses.map { string -> "    $string" }
             )
             .plus("}")
-            .foldIndexed("") { index, acc, e ->
-                if (index != 0) {
-                    "$acc\n$e"
-                } else {
-                    "$acc$e"
-                }
-            }
-
-        return protoClass
-    }
-
-    // new file content where the lenses block is inserted
-    val newFileContent: String get() {
-        val beginIndex = fileContent.indexOfFirst { s -> s.contains(BLOCK_PREPOSSESSOR) }
-            .takeIf { it >= 0 } ?: fileContent.size
-        val endIndex = fileContent.indexOfFirst { s -> s.contains(BLOCK_SUBPOSSESSOR) }
-            .takeIf { it >= 0 } ?: fileContent.size
-
-        val topContent = fileContent.subList(0, beginIndex)
-        val endContent = fileContent.subList(
-            (endIndex + 1).takeIf { it <= fileContent.size } ?: fileContent.size,
-            fileContent.size
-        )
-        val newContent = (topContent + proto + endContent).foldIndexed("") { index, acc, n ->
-            if (index != 0) "$acc\n$n" else "$acc$n"
-        }
-
-        return newContent
-    }
-
-    fun printToFile() {
-        source.writeText(newFileContent)
+            .joinToString("\n")
     }
 }
