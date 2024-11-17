@@ -93,7 +93,7 @@ _uiState.safeUpdate { state ->
 In build gradle
 ```kotlin
 plugins {
-  id("io.github.stefanusayudha.OpticGeneratorPlugin") version "1.1.0"
+  id("io.github.stefanusayudha.OpticGeneratorPlugin") version "1.1.1"
 }
 ```
 
@@ -106,7 +106,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath("io.github.stefanusayudha:optic:1.1.0")
+    classpath("io.github.stefanusayudha:optic:1.1.1")
   }
 }
 
