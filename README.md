@@ -96,7 +96,7 @@ No KSP Needed.
 In build gradle
 ```kotlin
 plugins {
-  id("io.github.stefanusayudha.OpticGeneratorPlugin") version "1.2.0"
+  id("io.github.stefanusayudha.OpticGeneratorPlugin") version "1.2.1"
 }
 ```
 
@@ -109,7 +109,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath("io.github.stefanusayudha:optic:1.2.0")
+    classpath("io.github.stefanusayudha:optic:1.2.1")
   }
 }
 
